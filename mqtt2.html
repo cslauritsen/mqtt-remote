@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="mqtt.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Include all compiled plugins (below), or include individual files as needed -->
+<script src="bootstrap/js/bootstrap.min.js"></script>
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+<script src="mqttws31.js"></script>
+
+<title>SH Control</title>
+<script>
+  
+// Create a client instance
+client = new Paho.MQTT.Client("r901nrct.sw.sherwin.com", 21883, 'jsClient-' + Math.random());
+
+// set callback handlers
+client.onConnectionLost = onConnectionLost;
+client.onMessageArrived = onMessageArrived;
+
+// connect the client
+client.connect({onSuccess:onConnect });
+
+
+// calle when the client connects
+function onConnect() {
+  // Once a connection has been mae, make a subscription an sen a message.
+  console.log("onConnect");
+  client.subscribe("/World");
+  message = new Paho.MQTT.Message("Hello");
+  message.destinationName = "/World";
+  client.send(message); 
+}
+
+
+function btnSend(topic, val) {
+  message = new Paho.MQTT.Message(val);
+  message.destinationName = topic;
+  client.send(message);
+}
+
+function send2() {
+  msg = new Paho.MQTT.Message(document.getElementById("msgtext").value);
+  msg.destinationName = "js";
+  client.send(msg);
+}
+
+// calle when the client loses its connection
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.log("onConnectionLost:"+responseObject.errorMessage);
+  }
+}
+
+// calle when a message arrives
+function onMessageArrived(message) {
+  //document.getElementById("msg").innerHTML = message.payloadString;
+}
+</script>
+</head>
+
+<body>
+<h1>SH Control</h1>
+
+<!--
+ <form action="#" method="post">
+   <input id="msgtext" type="text" />
+   <button id="send" onclick="send2();">Send</button>
+ </form>
+
+ <div id="msg">replaceme</div>
+-->
+
+<ul class="nav nav-pills">
+  <li  class="active" ><a data-toggle="pill" href="#home">Home</a></li>
+  <li><a data-toggle="pill" href="#menu1">LR TV Remote</a></li>
+  <li><a data-toggle="pill" href="#menu2">Menu 2</a></li>
+</ul>
+
+<div class="tab-content">
+  <div id="home" class="tab-pane fade in active">
+    <h3>HOME</h3>
+    <p>Some content.</p>
+  </div>
+  <div id="menu1" class="tab-pane fade">
+    <h3>Living Room TV Remote</h3>
+    <form action="#" method="post">
+      <input type="hidden" name="topic" value="/home/remotes/ww" />
+	<p>
+         <input type="button" value="Pwr" class="ww-round ww-power" onclick="btnSend(this.form.topic.value, '12,a90'); return true;" /> 
+         <button value="Pwr" class="btn btn-default ww-round ww-power" onclick="btnSend(this.form.topic.value, '12,a90'); return false;" /> 
+	</p>
+	<p>
+         <input type="button" value="Mute" onclick="btnSend(this.form.topic.value, '12,290'); return true;" class="ww-pill" /> 
+         <input type="button" value="PIP" onclick="btnSend(this.form.topic.value, '12,db0'); return true;" class="ww-pill" disabled="true"/> 
+         <input type="button" value="SWAP" onclick="btnSend(this.form.topic.value, '12,fb0'); return true;" class="ww-pill" disabled="true"/> 
+	</p>
+	<p>
+         <input type="button" value="Contrast" onclick="btnSend(this.form.topic.value, '12,190'); return true;" class="ww-pill" /> 
+         <input type="button" value="C.C." onclick="btnSend(this.form.topic.value, '12,310'); return true;" class="ww-pill" /> 
+         <input type="button" value="Zzz" onclick="btnSend(this.form.topic.value, '12,6d0'); return true;" class="ww-pill" /> 
+	</p>
+	<p>
+         <input type="button" value="A" onclick="btnSend(this.form.topic.value, '12,570'); return true;" class="ww-pill" style="background-color: red;"/> 
+         <input type="button" value="B" onclick="btnSend(this.form.topic.value, '12,d70'); return true;" class="ww-pill" style="background-color: green;"/> 
+         <input type="button" value="C" onclick="btnSend(this.form.topic.value, '12,370'); return true;" class="ww-pill" style="background-color: blue;"/> 
+	</p>
+	<p>
+         <input type="button" value="1" onclick="btnSend(this.form.topic.value, '12,010'); return true;" class="ww-round" />
+         <input type="button" value="2" onclick="btnSend(this.form.topic.value, '12,810'); return true;" class="ww-round" />
+         <input type="button" value="3" onclick="btnSend(this.form.topic.value, '12,410'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="4" onclick="btnSend(this.form.topic.value, '12,c10'); return true;" class="ww-round" />
+         <input type="button" value="5" onclick="btnSend(this.form.topic.value, '12,210'); return true;" class="ww-round" />
+         <input type="button" value="6" onclick="btnSend(this.form.topic.value, '12,a10'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="7" onclick="btnSend(this.form.topic.value, '12,610'); return true;" class="ww-round" />
+         <input type="button" value="8" onclick="btnSend(this.form.topic.value, '12,e10'); return true;" class="ww-round" />
+         <input type="button" value="9" onclick="btnSend(this.form.topic.value, '12,110'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="." onclick="btnSend(this.form.topic.value, '12,510'); return true;" class="ww-round" />
+         <input type="button" value="0" onclick="btnSend(this.form.topic.value, '12,910'); return true;" class="ww-round" />
+         <input type="button" value="ENT" onclick="btnSend(this.form.topic.value, '12,d10'); return true;" class="ww-round" />
+	</p>
+
+        <hr />
+
+	<p>
+         <input type="button" value="Vol-=5" onclick="btnSend(this.form.topic.value, '12,c90x5'); return true;" class="ww-pill" style="width: 140px" />
+         <input type="button" value="Vol+=5" onclick="btnSend(this.form.topic.value, '12,490x5'); return true;" class="ww-pill"  style="width: 140px"/>
+	</p>
+
+
+	<p>
+         <input type="button" value="Vol+" onclick="btnSend(this.form.topic.value, '12,490'); return true;" class="ww-round" />
+         <input type="button" value="Input" onclick="btnSend(this.form.topic.value, '12,a50'); return true;" class="ww-round" />
+         <input type="button" value="Ch+" onclick="btnSend(this.form.topic.value, '12,090'); return true;" class="ww-round" />
+	</p>
+
+	<p>
+         <input type="button" value="Vol-" onclick="btnSend(this.form.topic.value, '12,c90'); return true;" class="ww-round" />
+         <input type="button" value="&lt;=&gt;" onclick="btnSend(this.form.topic.value, '12,390'); return true;" class="ww-round" />
+         <input type="button" value="Ch-" onclick="btnSend(this.form.topic.value, '12,890'); return true;" class="ww-round" />
+	</p>
+
+        <hr />
+
+	<p>
+         <input type="button" value="Menu" onclick="btnSend(this.form.topic.value, '12,a50'); return true;" class="ww-round" />
+         <input type="button" value="Up^" onclick="btnSend(this.form.topic.value, '12,2f0'); return true;" class="ww-round" />
+         <input type="button" value="Back" onclick="btnSend(this.form.topic.value, '12,dd0'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="&lt;-" onclick="btnSend(this.form.topic.value, '12,2d0'); return true;" class="ww-round" />
+         <input type="button" value="Enter" onclick="btnSend(this.form.topic.value, '12,a70'); return true;" class="ww-round" />
+         <input type="button" value="-&gt;" onclick="btnSend(this.form.topic.value, '12,cd0'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="G*" onclick="btnSend(this.form.topic.value, '12,710'); return true;" class="ww-round" />
+         <input type="button" value="Down" onclick="btnSend(this.form.topic.value, '12,af0'); return true;" class="ww-round" />
+         <input type="button" value="i*" onclick="btnSend(this.form.topic.value, '12,5d0'); return true;" class="ww-round" />
+	</p>
+
+        <hr />
+
+	<p>
+         <input type="button" value="YPbPr1" onclick="btnSend(this.form.topic.value, '12,130'); return true;" class="ww-round" />
+         <input type="button" value="PC" onclick="btnSend(this.form.topic.value, '12,c30'); return true;" class="ww-round" />
+         <input type="button" value="HDMI" onclick="btnSend(this.form.topic.value, '12,430'); return true;" class="ww-round" />
+         <input type="button" value="TV" onclick="btnSend(this.form.topic.value, '12,250'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="YPbPr2" onclick="btnSend(this.form.topic.value, '12,930'); return true;" class="ww-round" />
+         <input type="button" value="Video" onclick="btnSend(this.form.topic.value, '12,030'); return true;" class="ww-round" />
+         <input type="button" value="S-Video" onclick="btnSend(this.form.topic.value, '12,b30'); return true;" class="ww-round" />
+         <input type="button" value="DVI" onclick="btnSend(this.form.topic.value, '12,230'); return true;" class="ww-round" />
+	</p>
+    </form>
+  </div>
+  <div id="menu2" class="tab-pane fade">
+    <h3>Menu 2</h3>
+    <p>Some content in menu 2.</p>
+  </div>
+</div>
+
+</body>
+</html>
