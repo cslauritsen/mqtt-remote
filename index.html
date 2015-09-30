@@ -28,7 +28,7 @@
 <script>
   
 // Create a client instance
-client = new Paho.MQTT.Client("r901nrct.sw.sherwin.com", 21883, 'jsClient-' + Math.random());
+client = new Paho.MQTT.Client(location.hostname, 9001, 'jsClient-' + Math.random());
 
 // set callback handlers
 client.onConnectionLost = onConnectionLost;
@@ -42,10 +42,10 @@ client.connect({onSuccess:onConnect });
 function onConnect() {
   // Once a connection has been mae, make a subscription an sen a message.
   console.log("onConnect");
-  client.subscribe("/World");
-  message = new Paho.MQTT.Message("Hello");
-  message.destinationName = "/World";
-  client.send(message); 
+  client.subscribe("/home/#");
+  //message = new Paho.MQTT.Message("Hello");
+  //message.destinationName = "/World";
+  //client.send(message); 
 }
 
 
@@ -70,128 +70,143 @@ function onConnectionLost(responseObject) {
 
 // calle when a message arrives
 function onMessageArrived(message) {
-  //document.getElementById("msg").innerHTML = message.payloadString;
+    console.log("topic: " + message.destinationName + " payload: " + message.payloadString);
+    if (message.destinationName === "/home/garage/door/status/north") {
+        console.log("Updating north door status");
+        document.getElementById("north-door-status").innerHTML = message.payloadString;
+    } 
+    else if (message.destinationName === "/home/garage/door/status/south") {
+        console.log("Updating south door status");
+        document.getElementById("south-door-status").innerHTML = message.payloadString;
+    } 
+
 }
 </script>
 </head>
 
 <body>
-<h1>SH Control</h1>
-
-<!--
- <form action="#" method="post">
-   <input id="msgtext" type="text" />
-   <button id="send" onclick="send2();">Send</button>
- </form>
-
- <div id="msg">replaceme</div>
--->
-
 <ul class="nav nav-pills">
-  <li  class="active" ><a data-toggle="pill" href="#home">Home</a></li>
+  <li  class="active" ><a data-toggle="pill" href="#garage">Garage</a></li>
   <li><a data-toggle="pill" href="#menu1">LR TV Remote</a></li>
   <li><a data-toggle="pill" href="#menu2">Menu 2</a></li>
 </ul>
 
 <div class="tab-content">
-  <div id="home" class="tab-pane fade in active">
-    <h3>HOME</h3>
-    <p>Some content.</p>
+  <div id="garage" class="tab-pane fade in active">
+    <h3>Garage</h3>
+    <form action="#" method="post">
+      <input type="hidden" name="topic" value="/home/garage/door/control/south/toggle" />
+	<p>
+         <input type="button" value="Activate South Door" onclick="btnSend(this.form.topic.value, '1'); return true;" /> 
+        <div>
+            <div style="float: left; display: inline; margin: 1em;">South Door</div>
+             <div id="south-door-status" style="float: left; display: inline; clear: all; margin: 1em;">?</div>
+        </div>
+    </p>
+    <br clear="all" />
+    <p>
+        <div>
+            <div style="float: left; display: inline; margin: 1em;">North Door</div>
+             <div id="north-door-status" style="float: left; display: inline; clear: all; margin: 1em;">?</div>
+        </div>
+	</p>
+    </form>
+
   </div>
   <div id="menu1" class="tab-pane fade">
     <h3>Living Room TV Remote</h3>
     <form action="#" method="post">
-      <input type="hidden" name="topic" value="/home/remotes/ww" />
+      <input type="hidden" name="topic" value="/home/livingroom/data" />
 	<p>
-         <input type="button" value="Pwr" class="ww-round ww-power" onclick="btnSend(this.form.topic.value, 'S\x0a\x90\x0c'); return true;" /> 
+         <input type="button" value="Pwr" class="ww-round ww-power" onclick="btnSend(this.form.topic.value, 'S\x0c\x0a\x90'); return true;" /> 
 	</p>
 	<p>
-         <input type="button" value="Mute" onclick="btnSend(this.form.topic.value, '12,290'); return true;" class="ww-pill" /> 
-         <input type="button" value="PIP" onclick="btnSend(this.form.topic.value, '12,db0'); return true;" class="ww-pill" disabled="true"/> 
-         <input type="button" value="SWAP" onclick="btnSend(this.form.topic.value, '12,fb0'); return true;" class="ww-pill" disabled="true"/> 
+         <input type="button" value="Mute" onclick="btnSend(this.form.topic.value, 'S\x0c\x02\x90'); return true;" class="ww-pill" /> 
+         <input type="button" value="PIP" onclick="btnSend(this.form.topic.value, 'S\x0c\x0d\xb0'); return true;" class="ww-pill" disabled="true"/> 
+         <input type="button" value="SWAP" onclick="btnSend(this.form.topic.value, 'S\x0c\x0f\xb0'); return true;" class="ww-pill" disabled="true"/> 
 	</p>
 	<p>
-         <input type="button" value="Contrast" onclick="btnSend(this.form.topic.value, '12,190'); return true;" class="ww-pill" /> 
-         <input type="button" value="C.C." onclick="btnSend(this.form.topic.value, '12,310'); return true;" class="ww-pill" /> 
-         <input type="button" value="Zzz" onclick="btnSend(this.form.topic.value, '12,6d0'); return true;" class="ww-pill" /> 
+         <input type="button" value="Contrast" onclick="btnSend(this.form.topic.value, 'S\x0c\x01\x90'); return true;" class="ww-pill" /> 
+         <input type="button" value="C.C." onclick="btnSend(this.form.topic.value, 'S\x0c\x03\x10'); return true;" class="ww-pill" /> 
+         <input type="button" value="Zzz" onclick="btnSend(this.form.topic.value, 'S\x0c\x06\xd0'); return true;" class="ww-pill" /> 
 	</p>
 	<p>
-         <input type="button" value="A" onclick="btnSend(this.form.topic.value, '12,570'); return true;" class="ww-pill" style="background-color: red;"/> 
-         <input type="button" value="B" onclick="btnSend(this.form.topic.value, '12,d70'); return true;" class="ww-pill" style="background-color: green;"/> 
-         <input type="button" value="C" onclick="btnSend(this.form.topic.value, '12,370'); return true;" class="ww-pill" style="background-color: blue;"/> 
+         <input type="button" value="A" onclick="btnSend(this.form.topic.value, 'S\x0c\x05\x70'); return true;" class="ww-pill" style="background-color: red;"/> 
+         <input type="button" value="B" onclick="btnSend(this.form.topic.value, 'S\x0c\x0d\x70'); return true;" class="ww-pill" style="background-color: green;"/> 
+         <input type="button" value="C" onclick="btnSend(this.form.topic.value, 'S\x0c\x03\x70'); return true;" class="ww-pill" style="background-color: blue;"/> 
 	</p>
 	<p>
-         <input type="button" value="1" onclick="btnSend(this.form.topic.value, '12,010'); return true;" class="ww-round" />
-         <input type="button" value="2" onclick="btnSend(this.form.topic.value, '12,810'); return true;" class="ww-round" />
-         <input type="button" value="3" onclick="btnSend(this.form.topic.value, '12,410'); return true;" class="ww-round" />
+         <input type="button" value="1" onclick="btnSend(this.form.topic.value, 'S\x0c\x00\x10'); return true;" class="ww-round" />
+         <input type="button" value="2" onclick="btnSend(this.form.topic.value, 'S\x0c\x08\x10'); return true;" class="ww-round" />
+         <input type="button" value="3" onclick="btnSend(this.form.topic.value, 'S\x0c\x04\x10'); return true;" class="ww-round" />
 	</p>
 	<p>
-         <input type="button" value="4" onclick="btnSend(this.form.topic.value, '12,c10'); return true;" class="ww-round" />
-         <input type="button" value="5" onclick="btnSend(this.form.topic.value, '12,210'); return true;" class="ww-round" />
-         <input type="button" value="6" onclick="btnSend(this.form.topic.value, '12,a10'); return true;" class="ww-round" />
+         <input type="button" value="4" onclick="btnSend(this.form.topic.value, 'S\x0c\x0c\x10'); return true;" class="ww-round" />
+         <input type="button" value="5" onclick="btnSend(this.form.topic.value, 'S\x0c\x02\x10'); return true;" class="ww-round" />
+         <input type="button" value="6" onclick="btnSend(this.form.topic.value, 'S\x0c\x0a\x10'); return true;" class="ww-round" />
 	</p>
 	<p>
-         <input type="button" value="7" onclick="btnSend(this.form.topic.value, '12,610'); return true;" class="ww-round" />
-         <input type="button" value="8" onclick="btnSend(this.form.topic.value, '12,e10'); return true;" class="ww-round" />
-         <input type="button" value="9" onclick="btnSend(this.form.topic.value, '12,110'); return true;" class="ww-round" />
+         <input type="button" value="7" onclick="btnSend(this.form.topic.value, 'S\x0c\x06\x10'); return true;" class="ww-round" />
+         <input type="button" value="8" onclick="btnSend(this.form.topic.value, 'S\x0c\x0e\x10'); return true;" class="ww-round" />
+         <input type="button" value="9" onclick="btnSend(this.form.topic.value, 'S\x0c\x01\x10'); return true;" class="ww-round" />
 	</p>
 	<p>
-         <input type="button" value="." onclick="btnSend(this.form.topic.value, '12,510'); return true;" class="ww-round" />
-         <input type="button" value="0" onclick="btnSend(this.form.topic.value, '12,910'); return true;" class="ww-round" />
-         <input type="button" value="ENT" onclick="btnSend(this.form.topic.value, '12,d10'); return true;" class="ww-round" />
-	</p>
-
-        <hr />
-
-	<p>
-         <input type="button" value="Vol-=5" onclick="btnSend(this.form.topic.value, '12,c90x5'); return true;" class="ww-pill" style="width: 140px" />
-         <input type="button" value="Vol+=5" onclick="btnSend(this.form.topic.value, '12,490x5'); return true;" class="ww-pill"  style="width: 140px"/>
-	</p>
-
-
-	<p>
-         <input type="button" value="Vol+" onclick="btnSend(this.form.topic.value, '12,490'); return true;" class="ww-round" />
-         <input type="button" value="Input" onclick="btnSend(this.form.topic.value, '12,a50'); return true;" class="ww-round" />
-         <input type="button" value="Ch+" onclick="btnSend(this.form.topic.value, '12,090'); return true;" class="ww-round" />
-	</p>
-
-	<p>
-         <input type="button" value="Vol-" onclick="btnSend(this.form.topic.value, '12,c90'); return true;" class="ww-round" />
-         <input type="button" value="&lt;=&gt;" onclick="btnSend(this.form.topic.value, '12,390'); return true;" class="ww-round" />
-         <input type="button" value="Ch-" onclick="btnSend(this.form.topic.value, '12,890'); return true;" class="ww-round" />
+         <input type="button" value="." onclick="btnSend(this.form.topic.value, 'S\x0c\x05\x10'); return true;" class="ww-round" />
+         <input type="button" value="0" onclick="btnSend(this.form.topic.value, 'S\x0c\x09\x10'); return true;" class="ww-round" />
+         <input type="button" value="ENT" onclick="btnSend(this.form.topic.value, 'S\x0c\x0d\x10'); return true;" class="ww-round" />
 	</p>
 
         <hr />
 
 	<p>
-         <input type="button" value="Menu" onclick="btnSend(this.form.topic.value, '12,a50'); return true;" class="ww-round" />
-         <input type="button" value="Up^" onclick="btnSend(this.form.topic.value, '12,2f0'); return true;" class="ww-round" />
-         <input type="button" value="Back" onclick="btnSend(this.form.topic.value, '12,dd0'); return true;" class="ww-round" />
+         <input type="button" value="Vol-=5" onclick="btnSend(this.form.topic.value, 'S\x0c\x0c\x90x\x05'); return true;" class="ww-pill" style="width: 140px" />
+         <input type="button" value="Vol+=5" onclick="btnSend(this.form.topic.value, 'S\x0c\x04\x90x\x05'); return true;" class="ww-pill"  style="width: 140px"/>
 	</p>
+
+
 	<p>
-         <input type="button" value="&lt;-" onclick="btnSend(this.form.topic.value, '12,2d0'); return true;" class="ww-round" />
-         <input type="button" value="Enter" onclick="btnSend(this.form.topic.value, '12,a70'); return true;" class="ww-round" />
-         <input type="button" value="-&gt;" onclick="btnSend(this.form.topic.value, '12,cd0'); return true;" class="ww-round" />
+         <input type="button" value="Vol+" onclick="btnSend(this.form.topic.value, 'S\x0c\x04\x90'); return true;" class="ww-round" />
+         <input type="button" value="Input" onclick="btnSend(this.form.topic.value, 'S\x0c\x0a\x50'); return true;" class="ww-round" />
+         <input type="button" value="Ch+" onclick="btnSend(this.form.topic.value, 'S\x0c\x00\x90'); return true;" class="ww-round" />
 	</p>
+
 	<p>
-         <input type="button" value="G*" onclick="btnSend(this.form.topic.value, '12,710'); return true;" class="ww-round" />
-         <input type="button" value="Down" onclick="btnSend(this.form.topic.value, '12,af0'); return true;" class="ww-round" />
-         <input type="button" value="i*" onclick="btnSend(this.form.topic.value, '12,5d0'); return true;" class="ww-round" />
+         <input type="button" value="Vol-" onclick="btnSend(this.form.topic.value, 'S\x0c\x0c\x90'); return true;" class="ww-round" />
+         <input type="button" value="&lt;=&gt;" onclick="btnSend(this.form.topic.value, 'S\x0c\x03\x90'); return true;" class="ww-round" />
+         <input type="button" value="Ch-" onclick="btnSend(this.form.topic.value, 'S\x0c\x08\x90'); return true;" class="ww-round" />
 	</p>
 
         <hr />
 
 	<p>
-         <input type="button" value="YPbPr1" onclick="btnSend(this.form.topic.value, '12,130'); return true;" class="ww-round" />
-         <input type="button" value="PC" onclick="btnSend(this.form.topic.value, '12,c30'); return true;" class="ww-round" />
-         <input type="button" value="HDMI" onclick="btnSend(this.form.topic.value, '12,430'); return true;" class="ww-round" />
-         <input type="button" value="TV" onclick="btnSend(this.form.topic.value, '12,250'); return true;" class="ww-round" />
+         <input type="button" value="Menu" onclick="btnSend(this.form.topic.value, 'S\x0c\x0a\x50'); return true;" class="ww-round" />
+         <input type="button" value="Up^" onclick="btnSend(this.form.topic.value, 'S\x0c\x02\xf0'); return true;" class="ww-round" />
+         <input type="button" value="Back" onclick="btnSend(this.form.topic.value, 'S\x0c\x0d\xd0'); return true;" class="ww-round" />
 	</p>
 	<p>
-         <input type="button" value="YPbPr2" onclick="btnSend(this.form.topic.value, '12,930'); return true;" class="ww-round" />
-         <input type="button" value="Video" onclick="btnSend(this.form.topic.value, '12,030'); return true;" class="ww-round" />
-         <input type="button" value="S-Video" onclick="btnSend(this.form.topic.value, '12,b30'); return true;" class="ww-round" />
-         <input type="button" value="DVI" onclick="btnSend(this.form.topic.value, '12,230'); return true;" class="ww-round" />
+         <input type="button" value="&lt;-" onclick="btnSend(this.form.topic.value, 'S\x0c\x02\xd0'); return true;" class="ww-round" />
+         <input type="button" value="Enter" onclick="btnSend(this.form.topic.value, 'S\x0c\x0a\x70'); return true;" class="ww-round" />
+         <input type="button" value="-&gt;" onclick="btnSend(this.form.topic.value, 'S\x0c\x0c\xd0'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="G*" onclick="btnSend(this.form.topic.value, 'S\x0c\x07\x10'); return true;" class="ww-round" />
+         <input type="button" value="Down" onclick="btnSend(this.form.topic.value, 'S\x0c\x0a\xf0'); return true;" class="ww-round" />
+         <input type="button" value="i*" onclick="btnSend(this.form.topic.value, 'S\x0c\x05\xd0'); return true;" class="ww-round" />
+	</p>
+
+        <hr />
+
+	<p>
+         <input type="button" value="YPbPr1" onclick="btnSend(this.form.topic.value, 'S\x0c\x01\x30'); return true;" class="ww-round" />
+         <input type="button" value="PC" onclick="btnSend(this.form.topic.value, 'S\x0c\x0c\x30'); return true;" class="ww-round" />
+         <input type="button" value="HDMI" onclick="btnSend(this.form.topic.value, 'S\x0c\x04\x30'); return true;" class="ww-round" />
+         <input type="button" value="TV" onclick="btnSend(this.form.topic.value, 'S\x0c\x02\x50'); return true;" class="ww-round" />
+	</p>
+	<p>
+         <input type="button" value="YPbPr2" onclick="btnSend(this.form.topic.value, 'S\x0c\x09\x30'); return true;" class="ww-round" />
+         <input type="button" value="Video" onclick="btnSend(this.form.topic.value, 'S\x0c\x00\x30'); return true;" class="ww-round" />
+         <input type="button" value="S-Video" onclick="btnSend(this.form.topic.value, 'S\x0c\x0b\x30'); return true;" class="ww-round" />
+         <input type="button" value="DVI" onclick="btnSend(this.form.topic.value, 'S\x0c\x02\x30'); return true;" class="ww-round" />
 	</p>
     </form>
   </div>
