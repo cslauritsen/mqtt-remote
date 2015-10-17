@@ -79,6 +79,14 @@ function onMessageArrived(message) {
         console.log("Updating south door status");
         document.getElementById("south-door-status").innerHTML = message.payloadString;
     } 
+    else if (message.destinationName === "/home/garage/sensor/temp" ) {
+        console.log("Updating garage temp");
+        document.getElementById("tempF").innerHTML = message.payloadString;
+    } 
+    else if (message.destinationName === "/home/livingroom/ir-cmd") {
+        console.log("Updating ir-cmd echo");
+        document.getElementById("ir-cmd").innerHTML = message.payloadString;
+    } 
 
 }
 </script>
@@ -110,11 +118,19 @@ function onMessageArrived(message) {
              <div id="north-door-status" style="float: left; display: inline; clear: all; margin: 1em;">?</div>
         </div>
 	</p>
+    <br clear="all" />
+    <p>
+        <div>
+            <div style="float: left; display: inline; margin: 1em;">Temp</div>
+             <div id="garage-temp" style="float: left; display: inline; clear: all; margin: 1em;"><span id="tempF"></span>&#x2109;</div>
+        </div>
+	</p>
     </form>
 
   </div>
   <div id="menu1" class="tab-pane fade">
     <h3>Living Room TV Remote</h3>
+    <b>Last cmd: </b> <div id="ir-cmd" >none </div>
     <form action="#" method="post">
       <input type="hidden" name="topic" value="/home/livingroom/data/tx" />
 	<p>
