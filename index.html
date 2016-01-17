@@ -83,9 +83,9 @@ function onMessageArrived(message) {
         console.log("Updating garage temp");
         document.getElementById("tempF").innerHTML = message.payloadString;
     } 
-    else if (message.destinationName === "/home/livingroom/ir-cmd") {
-        console.log("Updating ir-cmd echo");
-        document.getElementById("ir-cmd").innerHTML = message.payloadString;
+    else if (message.destinationName === "/home/livingroom/sony-cmd") {
+        console.log("Updating sony-cmd echo");
+        document.getElementById("sony-cmd").innerHTML = message.payloadString;
     } 
 
 }
@@ -130,7 +130,7 @@ function onMessageArrived(message) {
   </div>
   <div id="menu1" class="tab-pane fade">
     <h3>Living Room TV Remote</h3>
-    <b>Last cmd: </b> <div id="ir-cmd" >none </div>
+    <b>Last cmd: </b> <div id="sony-cmd" >none </div>
     <form action="#" method="post">
       <input type="hidden" name="topic" value="/home/livingroom/data/tx" />
 	<p>
