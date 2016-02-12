@@ -26,6 +26,8 @@
 
 <title>SH Control</title>
 <script>
+
+debug = true;
   
 // Create a client instance
 client = new Paho.MQTT.Client(location.hostname, 9001, 'jsClient-' + Math.random());
@@ -61,6 +63,18 @@ function send2() {
   client.send(msg);
 }
 
+function sendNEC(topic, cmdHex) {
+  msg = new Paho.MQTT.Message('N,1,0,32,' + cmdHex);
+  msg.destinationName = topic;
+  client.send(msg);
+}
+
+function setDebug(topic, val) {
+  msg = new Paho.MQTT.Message('c,debug,' + val);
+  msg.destinationName = topic;
+  client.send(msg);
+}
+
 // calle when the client loses its connection
 function onConnectionLost(responseObject) {
   if (responseObject.errorCode !== 0) {
@@ -85,7 +99,11 @@ function onMessageArrived(message) {
     } 
     else if (message.destinationName === "/home/livingroom/sony-cmd") {
         console.log("Updating sony-cmd echo");
-        document.getElementById("sony-cmd").innerHTML = message.payloadString;
+        document.getElementById("ir-cmd").innerHTML = message.payloadString;
+    } 
+    else if (message.destinationName === "/home/livingroom/nec-cmd") {
+        console.log("Updating nec-cmd echo");
+        document.getElementById("ir-cmd").innerHTML = message.payloadString;
     } 
 
 }
@@ -130,14 +148,15 @@ function onMessageArrived(message) {
   </div>
   <div id="menu1" class="tab-pane fade">
     <h3>Living Room TV Remote</h3>
-    <b>Last cmd: </b> <div id="sony-cmd" >none </div>
+    <b>Last cmd: </b> <div id="ir-cmd" >none </div>
     <form action="#" method="post">
       <input type="hidden" name="topic" value="/home/livingroom/data/tx" />
 	<p>
-         <input type="button" value="Pwr" class="ww-round ww-power" onclick="btnSend(this.form.topic.value, 'Sa90'); return true;" /> 
+         <input type="button" value="Pwr" class="ww-round ww-power" onclick="sendNEC(this.form.topic.value, 'fe50af'); return true;" /> 
+         <input type="button" value="Toggle Debug" class="ww-round ww-power" onclick="setDebug(this.form.topic.value, debug = !debug); return true;" /> 
 	</p>
 	<p>
-         <input type="button" value="Mute" onclick="btnSend(this.form.topic.value, 'S290'); return true;" class="ww-pill" /> 
+         <input type="button" value="Mute" onclick="sendNEC(this.form.topic.value, 'fed02f'); return true;" class="ww-pill" /> 
          <input type="button" value="PIP" onclick="btnSend(this.form.topic.value, 'Sdb0'); return true;" class="ww-pill" disabled="true"/> 
          <input type="button" value="SWAP" onclick="btnSend(this.form.topic.value, 'Sfb0'); return true;" class="ww-pill" disabled="true"/> 
 	</p>
